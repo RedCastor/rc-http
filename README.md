@@ -33,12 +33,8 @@ angular('yourAngularApp',['rcHttp']);
 <h4>Usage/Example</h4>
 
 ```html
-<rc-http url="http://demo.wp-api.org/wp-json/wp/v2/posts/1" ng-bind-html="$rcHttp.data.content.rendered"></rc-http>
-
 <rc-http url="http://demo.wp-api.org/wp-json/wp/v2/posts/1">
     <section ng-bind-html="$rcHttp.data.content.rendered"></section>
 </rc-http>
 ```
-
-```html
 
