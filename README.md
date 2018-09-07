@@ -23,7 +23,7 @@ angular('yourAngularApp',['rcHttp']);
 - **params** = Optional for $http is config.params.
 - **model** = Optional for $http is config.data.
 - **config** = Optional for $http is config.
-- **template-url** = Url template.
+- **template-url** = Url template. Optional
 - **onStart** = Expression on request start.
 - **onSuccess** = Expression on request success. $success
 - **onError** = Expression on request error. $error
@@ -33,7 +33,11 @@ angular('yourAngularApp',['rcHttp']);
 <h4>Usage/Example</h4>
 
 ```html
-<rc-http url="http://demo.wp-api.org/wp-json/wp/v2/posts/1" ng-bind-html="$rcHttp.data.content.rendered"></rch-http>
+<rc-http url="http://demo.wp-api.org/wp-json/wp/v2/posts/1" ng-bind-html="$rcHttp.data.content.rendered"></rc-http>
+
+<rc-http url="http://demo.wp-api.org/wp-json/wp/v2/posts/1">
+    <section ng-bind-html="$rcHttp.data.content.rendered"></section>
+</rc-http>
 ```
 
 ```html
