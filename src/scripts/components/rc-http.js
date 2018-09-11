@@ -19,6 +19,7 @@
                 url:        "@",
                 config:     "<",
                 params:     "<?",
+                data:       "<",
                 model:      "=?",
                 onStart:    "&",
                 onSuccess:  "&",

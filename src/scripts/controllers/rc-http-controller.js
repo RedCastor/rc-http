@@ -15,14 +15,26 @@
       function ( $scope, $element, $attrs, $transclude, $templateRequest, $injector, $log ) {
 
       var rcHttp = this;
+      var $service;
 
       function init() {
 
           rcHttp.isPending = false;
       }
 
+
+      function get_response(response) {
+
+          return {
+              data: response.data,
+              status: response.status,
+              statusText: response.statusText,
+          };
+      }
+
       this.$onInit = function() {
 
+          //Get Template url or transclude if empty
           $templateRequest(angular.isString(rcHttp.templateUrl) ? rcHttp.templateUrl : "rc-http.tpl.html").then(
               function(html){
 
@@ -44,26 +56,48 @@
               }
           );
 
+          //Set default service
+          if (!angular.isString(rcHttp.service) || !rcHttp.service.length || !$injector.has(rcHttp.service)) {
+              rcHttp.service = '$http';
+          }
+
+          //Load Service by inject
+          $service = $injector.get(rcHttp.service);
+
+          //Set default method
+          if (!angular.isString(rcHttp.method) || !rcHttp.method.length || typeof $service[rcHttp.method] !== 'function') {
+              rcHttp.method = 'get';
+          }
+
+          if ( !angular.isString(rcHttp.url) || !rcHttp.url.length) {
+              rcHttp.url = false;
+          }
+
           rcHttp.auto = angular.isUndefined(rcHttp.auto) || rcHttp.auto === true ? true : false;
-          rcHttp.service = angular.isString(rcHttp.service) ? rcHttp.service : '$http';
-          rcHttp.method = angular.isString(rcHttp.method) ? rcHttp.method : 'get';
-          rcHttp.url = angular.isString(rcHttp.url) ? rcHttp.url : "";
+          rcHttp.data = angular.isObject(rcHttp.data) ? rcHttp.data : {};
           rcHttp.config = angular.isObject(rcHttp.config) ? rcHttp.config : {cache: true};
 
-          if (rcHttp.params) {
+          if (angular.isObject(rcHttp.params)) {
               angular.extend(rcHttp.config.params, rcHttp.params);
           }
 
+          //Call Request
           if (rcHttp.auto === true) {
-            rcHttp.request();
+
+              rcHttp.response = rcHttp.data.response ? angular.copy(rcHttp.data.response) : {};
+
+              if ( rcHttp.service !== '$http' || (rcHttp.service === '$http' && rcHttp.url) ) {
+                  rcHttp.send();
+              }
           }
+
+
       };
 
 
-      this.request = function(config) {
+      this.send = function(config) {
 
           try {
-              var $service = $injector.get(rcHttp.service);
 
               rcHttp.isPending = true;
               rcHttp.onStart();
@@ -76,17 +110,43 @@
               config.params = !config.params ? angular.copy(rcHttp.config.params) : config.params;
               config.data = !config.data ? angular.copy(rcHttp.config.data) : config.data;
 
-              var http_instance = $service[rcHttp.method](rcHttp.url, config);
+              var http_instance;
+
+              //Resolve instance method type
+              switch($service[rcHttp.method]) {
+                  case 'get':
+                  case 'delete':
+                  case 'head':
+                  case 'jsonp':
+                      http_instance = $service[rcHttp.method](rcHttp.url, config);
+                      break;
+                  case 'post':
+                  case 'put':
+                  case 'patch':
+                      http_instance = $service[rcHttp.method](rcHttp.url, rcHttp.model, config);
+                      break;
+                  default: {
+                      if (!rcHttp.url) {
+                          http_instance = $service[rcHttp.method](rcHttp.model, config);
+                      }
+                      else {
+                          http_instance = $service[rcHttp.method](rcHttp.url, rcHttp.model, config);
+                      }
+                  }
+              }
+
 
               http_instance.then(function(success) {
 
-                  rcHttp.data = success.data ? success.data : success;
+                  rcHttp.response = get_response(success);
 
-                  rcHttp.onSuccess({ $success: rcHttp.data });
+                  rcHttp.onSuccess({ $response: rcHttp.response });
                   rcHttp.isPending = false;
               }, function(error) {
 
-                  rcHttp.onError({ $error: error });
+                  rcHttp.response = get_response(error);
+
+                  rcHttp.onError({ $response: rcHttp.response });
                   rcHttp.isPending = false;
               });
 
