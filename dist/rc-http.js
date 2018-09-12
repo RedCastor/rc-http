@@ -37,12 +37,12 @@
         function init() {
             rcHttp.isPending = false;
         }
-        function get_response(response, success) {
+        function get_response(response, resolved) {
             return {
                 data: response.data,
-                success: success || true,
-                status: response.status || (success === true ? 200 : 400),
-                statusText: response.statusText || (success === true ? "OK" : "Bad Request")
+                success: resolved === true ? true : false,
+                status: response.status || (resolved === true ? 200 : 400),
+                statusText: response.statusText || (resolved === true ? "OK" : "Bad Request")
             };
         }
         this.$onInit = function() {
@@ -69,7 +69,7 @@
             }
             rcHttp.auto = angular.isUndefined(rcHttp.auto) || rcHttp.auto === true ? true : false;
             rcHttp.data = angular.isObject(rcHttp.data) ? rcHttp.data : {};
-            rcHttp.response = rcHttp.response ? angular.copy(get_response(rcHttp.response)) : get_response({}, false);
+            rcHttp.response = rcHttp.response ? angular.copy(get_response(rcHttp.response, true)) : get_response({}, false);
             rcHttp.config = angular.isObject(rcHttp.config) ? rcHttp.config : {
                 cache: true
             };
