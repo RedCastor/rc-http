@@ -19,6 +19,7 @@
             config: "<",
             params: "<?",
             data: "<",
+            response: "<",
             model: "=?",
             onStart: "&",
             onSuccess: "&",
@@ -36,11 +37,12 @@
         function init() {
             rcHttp.isPending = false;
         }
-        function get_response(response) {
+        function get_response(response, success) {
             return {
                 data: response.data,
-                status: response.status,
-                statusText: response.statusText
+                success: success || true,
+                status: response.status || (success === true ? 200 : 400),
+                statusText: response.statusText || (success === true ? "OK" : "Bad Request")
             };
         }
         this.$onInit = function() {
@@ -67,6 +69,7 @@
             }
             rcHttp.auto = angular.isUndefined(rcHttp.auto) || rcHttp.auto === true ? true : false;
             rcHttp.data = angular.isObject(rcHttp.data) ? rcHttp.data : {};
+            rcHttp.response = rcHttp.response ? angular.copy(get_response(rcHttp.response)) : get_response({}, false);
             rcHttp.config = angular.isObject(rcHttp.config) ? rcHttp.config : {
                 cache: true
             };
@@ -74,7 +77,6 @@
                 angular.extend(rcHttp.config.params, rcHttp.params);
             }
             if (rcHttp.auto === true) {
-                rcHttp.response = rcHttp.data.response ? angular.copy(rcHttp.data.response) : {};
                 if (rcHttp.service !== "$http" || rcHttp.service === "$http" && rcHttp.url) {
                     rcHttp.send();
                 }
@@ -115,13 +117,13 @@
                     }
                 }
                 http_instance.then(function(success) {
-                    rcHttp.response = get_response(success);
+                    rcHttp.response = get_response(success, true);
                     rcHttp.onSuccess({
                         $response: rcHttp.response
                     });
                     rcHttp.isPending = false;
                 }, function(error) {
-                    rcHttp.response = get_response(error);
+                    rcHttp.response = get_response(error, false);
                     rcHttp.onError({
                         $response: rcHttp.response
                     });

@@ -20,6 +20,7 @@
                 config:     "<",
                 params:     "<?",
                 data:       "<",
+                response:   "<",
                 model:      "=?",
                 onStart:    "&",
                 onSuccess:  "&",
