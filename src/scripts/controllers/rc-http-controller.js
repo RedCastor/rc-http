@@ -113,7 +113,7 @@
               var http_instance;
 
               //Resolve instance method type
-              switch($service[rcHttp.method]) {
+              switch(rcHttp.method) {
                   case 'get':
                   case 'delete':
                   case 'head':

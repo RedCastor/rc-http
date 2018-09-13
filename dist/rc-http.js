@@ -93,7 +93,7 @@
                 config.params = !config.params ? angular.copy(rcHttp.config.params) : config.params;
                 config.data = !config.data ? angular.copy(rcHttp.config.data) : config.data;
                 var http_instance;
-                switch ($service[rcHttp.method]) {
+                switch (rcHttp.method) {
                   case "get":
                   case "delete":
                   case "head":
