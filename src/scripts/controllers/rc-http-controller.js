@@ -19,20 +19,31 @@
 
       function init() {
 
-          rcHttp.isPending = false;
+          rcHttp.isPending;
       }
 
 
-      function get_response(response, resolved) {
+      /**
+       * Set response
+       *
+       * @param response
+       * @param resolved
+       * @param init
+       * @returns {{data: *, success: boolean, status: (*|number), statusText: (*|string)}}
+       */
+      function get_response(response, resolved, init) {
 
           return {
-              data: response.data,
+              data: !init ? (response.data || null) : undefined,
               success: resolved === true ? true : false,
               status: response.status || (resolved === true ? 200 : 400),
-              statusText: response.statusText || (resolved === true ? 'OK' : 'Bad Request'),
+              statusText: response.statusText || (resolved === true ? 'OK' : 'Bad Request')
           };
       }
 
+      /**
+       * Component Init
+       */
       this.$onInit = function() {
 
           //Get Template url or transclude if empty
@@ -76,7 +87,7 @@
 
           rcHttp.auto = angular.isUndefined(rcHttp.auto) || rcHttp.auto === true ? true : false;
           rcHttp.data = angular.isObject(rcHttp.data) ? rcHttp.data : {};
-          rcHttp.response = rcHttp.response ? angular.copy(get_response(rcHttp.response, true)) : get_response({}, false);
+          rcHttp.response = rcHttp.response ? angular.copy(get_response(rcHttp.response, true, true)) : get_response({}, false);
           rcHttp.config = angular.isObject(rcHttp.config) ? rcHttp.config : {cache: true};
 
           if (angular.isObject(rcHttp.params)) {
@@ -95,6 +106,12 @@
       };
 
 
+      /**
+       * Send Request
+       *
+       * @param config
+       * @returns {*}
+       */
       this.send = function(config) {
 
           try {
@@ -112,7 +129,7 @@
 
               var http_instance;
 
-              //Resolve instance method type
+              //Resolve instance method type for $http
               switch(rcHttp.method) {
                   case 'get':
                   case 'delete':
@@ -155,7 +172,13 @@
           catch (e) {
               $log.error(e);
 
-              rcHttp.onError({ $error: {message: 'Error send request rcHttp'} });
+              var error = {
+                  status: 0,
+                  statusText: 'Error send request'
+              };
+
+              rcHttp.response = get_response(error, false);
+              rcHttp.onError({ $response: rcHttp.response });
               rcHttp.isPending = false;
           }
       };
