@@ -35,11 +35,11 @@
         var rcHttp = this;
         var $service;
         function init() {
-            rcHttp.isPending = false;
+            rcHttp.isPending = undefined;
         }
-        function get_response(response, resolved) {
+        function get_response(response, resolved, init) {
             return {
-                data: response.data,
+                data: !init ? response.data || null : undefined,
                 success: resolved === true ? true : false,
                 status: response.status || (resolved === true ? 200 : 400),
                 statusText: response.statusText || (resolved === true ? "OK" : "Bad Request")
@@ -69,7 +69,7 @@
             }
             rcHttp.auto = angular.isUndefined(rcHttp.auto) || rcHttp.auto === true ? true : false;
             rcHttp.data = angular.isObject(rcHttp.data) ? rcHttp.data : {};
-            rcHttp.response = rcHttp.response ? angular.copy(get_response(rcHttp.response, true)) : get_response({}, false);
+            rcHttp.response = rcHttp.response ? angular.copy(get_response(rcHttp.response, true, true)) : get_response({}, false);
             rcHttp.config = angular.isObject(rcHttp.config) ? rcHttp.config : {
                 cache: true
             };
@@ -85,13 +85,26 @@
         this.send = function(config) {
             try {
                 rcHttp.isPending = true;
-                rcHttp.onStart();
+                if (angular.isObject(config) && angular.isObject(config.form)) {
+                    if (angular.isFunction(config.form.$setTouched)) {
+                        config.$setTouched();
+                    }
+                    if (angular.isFunction(config.form.$validate)) {
+                        config.$validate();
+                    }
+                    if (!config.form.$valid) {
+                        return false;
+                    }
+                }
                 if (rcHttp.model) {
                     rcHttp.config.data = rcHttp.model;
                 }
                 config = angular.isObject(config) ? config : angular.copy(rcHttp.config);
                 config.params = !config.params ? angular.copy(rcHttp.config.params) : config.params;
                 config.data = !config.data ? angular.copy(rcHttp.config.data) : config.data;
+                rcHttp.onStart({
+                    $config: config
+                });
                 var http_instance;
                 switch (rcHttp.method) {
                   case "get":
@@ -132,10 +145,13 @@
                 return http_instance;
             } catch (e) {
                 $log.error(e);
+                var error = {
+                    status: 0,
+                    statusText: "Error send request"
+                };
+                rcHttp.response = get_response(error, false);
                 rcHttp.onError({
-                    $error: {
-                        message: "Error send request rcHttp"
-                    }
+                    $response: rcHttp.response
                 });
                 rcHttp.isPending = false;
             }
