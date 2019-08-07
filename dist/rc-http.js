@@ -87,10 +87,10 @@
                 rcHttp.isPending = true;
                 if (angular.isObject(config) && angular.isObject(config.form)) {
                     if (angular.isFunction(config.form.$setTouched)) {
-                        config.$setTouched();
+                        config.form.$setTouched();
                     }
                     if (angular.isFunction(config.form.$validate)) {
-                        config.$validate();
+                        config.form.$validate();
                     }
                     if (!config.form.$valid) {
                         return false;
