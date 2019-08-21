@@ -31,10 +31,10 @@
              * @param init
              * @returns {{data: *, success: boolean, status: (*|number), statusText: (*|string)}}
              */
-            function get_response(response, resolved, init) {
+            function get_response(response, resolved) {
 
                 return {
-                    data: !init ? (response.data || null) : undefined,
+                    data: angular.isDefined(response.data) ? (response.data || null) : undefined,
                     success: resolved === true ? true : false,
                     status: response.status || (resolved === true ? 200 : 400),
                     statusText: response.statusText || (resolved === true ? 'OK' : 'Bad Request')
@@ -87,7 +87,7 @@
 
                 rcHttp.auto = angular.isUndefined(rcHttp.auto) || rcHttp.auto === true ? true : false;
                 rcHttp.data = angular.isObject(rcHttp.data) ? rcHttp.data : {};
-                rcHttp.response = rcHttp.response ? angular.copy(get_response(rcHttp.response, true, true)) : get_response({}, false);
+                rcHttp.response = rcHttp.response ? angular.copy(get_response(rcHttp.response, true)) : get_response({}, false);
                 rcHttp.config = angular.isObject(rcHttp.config) ? rcHttp.config : {cache: true};
 
                 if (angular.isObject(rcHttp.params)) {
