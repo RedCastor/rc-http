@@ -74,7 +74,7 @@
                 cache: true
             };
             if (angular.isObject(rcHttp.params)) {
-                angular.extend(rcHttp.config.params, rcHttp.params);
+                rcHttp.config.params = angular.extend(angular.isObject(rcHttp.config.params) ? rcHttp.config.params : {}, rcHttp.params);
             }
             if (rcHttp.auto === true) {
                 if (rcHttp.service !== "$http" || rcHttp.service === "$http" && rcHttp.url) {
